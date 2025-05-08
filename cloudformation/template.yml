@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Simple S3 bucket creation with a unique name
+
+Resources:
+  UniqueS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "unique-bucket-name-${AWS::AccountId}-${AWS::Region}-${AWS::StackName}"
+
+Outputs:
+  BucketName:
+    Description: "Name of the S3 bucket"
+    Value: !Ref UniqueS3Bucket
