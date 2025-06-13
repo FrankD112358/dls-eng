@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Simple S3 bucket with a unique name
+Description: Simple S3 bucket with a unique name.
 
 Resources:
   UniqueS3Bucket:
