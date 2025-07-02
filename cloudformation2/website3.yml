@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: "example.com"
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+  OAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: S3OAC
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  SSLCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: example.com
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: example.com
+          HostedZoneId: !Ref HostedZone
+      Tags:
+        - Key: Name
+          Value: SSLCert
+
+  HostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: "example.com"
+  Route53ARecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: example.com
+      Type: A
+      AliasTarget:
+        HostedZoneId: Z2FDTNDATAQYW2 # CloudFront's fixed hosted zone ID (do not change)
+        DNSName: CloudFrontDistribution.DomainName
+  Route53AAAARecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: example.com
+      Type: AAAA
+      AliasTarget:
+        HostedZoneId: Z2FDTNDATAQYW2 # CloudFront's fixed hosted zone ID (do not change)
+        DNSName: CloudFrontDistribution.DomainName
+  Route53SSLCertValidation:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !GetAtt SSLCertificate.DomainValidationOptions[0].ResourceRecord.Name
+      Type: CNAME
+      TTL: 300
+      ResourceRecords:
+        - !GetAtt SSLCertificate.DomainValidationOptions[0].ResourceRecord.Value
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        Origins:
+          - Id: WebsiteS3Origin
+            DomainName: !Sub "${WebsiteBucket}.s3.${AWS::Region}.amazonaws.com"
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !Ref OAC
+        DefaultCacheBehavior:
+          TargetOriginId: WebsiteS3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: ["GET", "HEAD"]
+          CachedMethods: ["GET", "HEAD"]
+          ForwardedValues:
+            QueryString: false
+        ViewerCertificate:
+          AcmCertificateArn: SSLCertificate.Arn
+          SslSupportMethod: sni-only
+        Aliases:
+          - "example.com"
+
+# Note: SOA and NS records will be created automatically in Route 53.  The NS records will need to be added to your domain's custom DNS nameservers.
+
+
