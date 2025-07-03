@@ -1,4 +1,4 @@
-name: Deploy CloudFormation - test
+name: Deploy CloudFormation - DLS Test
 
 on:
   workflow_dispatch:
@@ -39,11 +39,11 @@ jobs:
         if: ${{ github.event.inputs.action == 'deploy' }}
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
-          name: test
+          name: DLS Test
           template: website.yml
           no-fail-on-empty-changeset: "1"
 
       - name: Delete CloudFormation stack
         if: ${{ github.event.inputs.action == 'delete' }}
         run: |
-          aws cloudformation delete-stack --stack-name test
+          aws cloudformation delete-stack --stack-name DLS Test
