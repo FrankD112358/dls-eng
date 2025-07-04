@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  UniqueBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Join 
+        - "-"
+        - - s3bucket
+          - !Ref "AWS::AccountId"
+          - !Ref "AWS::Region"
+          - !Select 
+            - 2
+            - !Split 
+              - "-"
+              - !Ref "AWS::StackName"
