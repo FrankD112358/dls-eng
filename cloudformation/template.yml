@@ -3,4 +3,4 @@ Resources:
   S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: unique-bucket-1234567890
+      BucketName: unique-bucket-AAAAAAAAAAAAAAAAAAAAAAAAAA
