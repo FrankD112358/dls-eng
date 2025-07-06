@@ -1,8 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Simple S3 bucket with a unique name
-
 Resources:
-  UniqueBucket:
+  S3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'unique-bucket-${AWS::AccountId}-${AWS::Region}-${AWS::StackName}-${AWS::StackId}'
+      BucketName: unique-bucket-1234567890
