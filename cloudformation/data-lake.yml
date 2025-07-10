@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  LogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/dls-test-ingestion-${AWS::Region}'
+    DeletionPolicy: Delete #TODO: Change to Retain for production
+    UpdateReplacePolicy: Delete #TODO: Change to Retain for production
+
+  LambdaFunction:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: !Sub 'dls-test-ingestion-${AWS::Region}'
+      Runtime: python3.12
+      Handler: main.handler
+      Role: !GetAtt 'LambdaExecutionRole.Arn'
+      Code:
+        S3Bucket: !Sub 'dls-lambda-functions-${AWS::Region}'
+        S3Key: 'main.py'
+      LoggingConfig:
+        LogGroup: !Ref 'LogGroup'
+        LogFormat: JSON
+  LambdaExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: execution-role-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: !GetAtt LogGroup.Arn
+        - PolicyName: s3-access-policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:Get*'
+                  - 's3:List*'
+                Resource: !Sub 'arn:aws:s3:::dls-test-${AWS::Region}/staging/*'
+              - Effect: 'Allow'
+                Action:
+                  - 's3:Put*'
+                  - 's3:List*'
+                Resource: !Sub 'arn:aws:s3:::dls-test-${AWS::Region}/*'
+  LambdaInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      FunctionName: !GetAtt LambdaFunction.Arn
+      Action: 'lambda:InvokeFunction'
+      Principal: 's3.amazonaws.com'
+      SourceAccount: !Sub ${AWS::AccountId}
+
+  S3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'dls-test-${AWS::Region}'
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: s3:ObjectCreated:*
+            Function: !GetAtt LambdaFunction.Arn
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: suffix
+                    Value: .json
+      LifecycleConfiguration:
+        Rules:
+          - Id: 'stagingFolderCleanup'
+            Prefix: 'staging'
+            Status: 'Enabled'
+            ExpirationInDays: 7
