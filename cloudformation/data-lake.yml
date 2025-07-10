@@ -51,7 +51,7 @@ Resources:
                 Action:
                   - 's3:Get*'
                   - 's3:List*'
-                Resource: !Sub 'arn:aws:s3:::dls-test-${AWS::Region}/dls-bucket-landing-zone/*'
+                Resource: !Sub 'arn:aws:s3:::dls-test-${AWS::Region}/staging/*'
               - Effect: 'Allow'
                 Action:
                   - 's3:Put*'
