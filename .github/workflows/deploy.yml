@@ -49,6 +49,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Delete failed CloudFormation stack
+        run: |
+          STACK_NAME="dls-test"
+          STATUS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --region us-east-1 --query "Stacks[0].StackStatus" --output text || echo "NOT_FOUND")
+          if [[ "$STATUS" == "ROLLBACK_COMPLETE" ]]; then
+            echo "Deleting failed stack: $STACK_NAME"
+            aws cloudformation delete-stack --stack-name $STACK_NAME --region us-east-1
+            echo "Waiting for deletion to complete..."
+            aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME --region us-east-1
+          else
+            echo "No failed stack to delete. Status: $STATUS"
+          fi
+
       - name: Deploy CloudFormation stack
         if: ${{ github.event.inputs.action == 'deploy' }}
         uses: aws-actions/aws-cloudformation-github-deploy@v1
