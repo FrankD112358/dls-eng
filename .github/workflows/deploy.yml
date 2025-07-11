@@ -1,16 +1,30 @@
-name: Deploy CloudFormation - dls-test
+name: Deploy CloudFormation
 
 on:
   workflow_dispatch:
     inputs:
       action:
-        description: 'Action to perform: deploy or delete'
+        description: 'Action to perform'
         required: true
         default: 'deploy'
         type: choice
         options:
           - deploy
           - delete
+      region:
+        description: 'Region to deploy to'
+        required: true
+        default: 'us-east-1'
+        type: choice
+        options:
+          - us-east-1
+          - us-east-2
+          - us-west-2
+          - eu-west-1
+          - eu-west-2
+          - eu-central-1
+          - ap-southeast-1
+          - ap-northeast-1
   pull_request: # deploy on PR merges to main
     types:
       - closed
@@ -40,9 +54,9 @@ jobs:
         uses: aws-actions/aws-cloudformation-github-deploy@v1
         with:
           name: dls-test
-          template: data-lake.yml
+          template: cloudformation/data-lake.yml
           no-fail-on-empty-changeset: "1"
-
+      
       - name: Zip Lambda function
         if: ${{ github.event.inputs.action == 'deploy' }}
         run: |
@@ -52,7 +66,7 @@ jobs:
       - name: Upload Lambda zip to S3
         if: ${{ github.event.inputs.action == 'deploy' }}
         run: |
-          aws s3 cp lambda.zip s3://dls-test-us-east-1/lambda.zip
+          aws s3 cp lambda.zip s3://dls-component-name-dls-region/lambda.zip
 
       - name: Delete CloudFormation stack
         if: ${{ github.event.inputs.action == 'delete' }}
