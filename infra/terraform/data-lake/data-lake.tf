@@ -9,7 +9,7 @@ provider "aws" {
 
 # Log group
 resource "aws_cloudwatch_log_group" "lambda_log_group" {
-  name              = "/aws/lambda/test-${var.region}"
+  name              = "/aws/lambda/dls-test-${var.region}"
   retention_in_days = 14
 
   lifecycle {
@@ -17,8 +17,8 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
   }
 }
 
-resource "aws_lambda_s3_bucket" "lambda_s3_bucket" {
-  bucket = "dls-bucket-name"
+resource "aws_s3_bucket" "lambda_s3_bucket" {
+  bucket = "dls-lambda-functions-${var.region}"
 }
 
 # Zip ingestion_lambda folder
@@ -38,7 +38,7 @@ resource "aws_s3_object" "lambda_zip" {
 
 # Lambda Ingestion
 resource "aws_lambda_function" "ingestion_lambda" {
-  function_name = "test-${var.region}"
+  function_name = "dls-test-${var.region}"
   runtime       = "python3.12"
   handler       = "main.handler"
   role          = aws_iam_role.lambda_exec.arn
@@ -46,7 +46,7 @@ resource "aws_lambda_function" "ingestion_lambda" {
   s3_bucket     = "dls-lambda-functions-${var.region}"
   s3_key        = "lambda.zip"
 
-  source_code_hash = filebase64sha256("${path.module}/main.py")
+  source_code_hash = filebase64sha256("${path.module}/../../ingestion_lambda/main.py")
 }
 
 resource "aws_iam_role" "lambda_exec" {
@@ -78,7 +78,7 @@ resource "aws_iam_policy" "lambda_policy" {
           "logs:CreateLogStream",
           "logs:PutLogEvents"
         ],
-        Resource = "arn:aws:logs:${var.region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/test-${var.region}:*"
+        Resource = "arn:aws:logs:${var.region}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/dls-test-${var.region}:*"
       },
       {
         Effect = "Allow",
@@ -86,7 +86,7 @@ resource "aws_iam_policy" "lambda_policy" {
           "s3:Get*",
           "s3:List*"
         ],
-        Resource = "arn:aws:s3:::test-${var.region}/staging/*"
+        Resource = "arn:aws:s3:::dls-test-${var.region}/staging/*"
       },
       {
         Effect = "Allow",
@@ -94,7 +94,7 @@ resource "aws_iam_policy" "lambda_policy" {
           "s3:Put*",
           "s3:List*"
         ],
-        Resource = "arn:aws:s3:::test-${var.region}/*"
+        Resource = "arn:aws:s3:::dls-test-${var.region}/*"
       }
     ]
   })
@@ -115,11 +115,11 @@ resource "aws_lambda_permission" "allow_s3" {
 
 data "aws_caller_identity" "current" {}# S3 landing Zone
 resource "aws_s3_bucket" "s3_bucket" {
-  bucket = "test-${var.region}"
+  bucket = "dls-test-${var.region}"
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "cleanup" {
-  bucket = aws_s3_bucket.dls_test.id
+  bucket = aws_s3_bucket.lambda_s3_bucket.id
 
   rule {
     id     = "stagingFolderCleanup"
