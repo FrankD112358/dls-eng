@@ -32,7 +32,7 @@ resource "aws_s3_bucket" "lambda_s3_bucket" {
 # Zip ingestion_lambda folder
 data "archive_file" "lambda_zip" {
   type        = "zip"
-  source_dir  = "${path.module}/../../ingestion_lambda"
+  source_dir  = "${path.module}/../../../../ingestion_lambda"
   output_path = "${path.module}/lambda.zip"
 }
 

@@ -61,7 +61,6 @@ jobs:
         uses: hashicorp/setup-terraform@v1
 
       - name: Terraform Init
-        working-directory: infra/terraform/data-lake
         run: |
           terraform init \
             -backend-config="bucket=dls-terraform-states-${{ github.event.inputs.region }}" \
@@ -71,17 +70,9 @@ jobs:
 
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'deploy' }}
-        working-directory: infra/terraform/data-lake
         run: |
-          echo "Listing ingestion_lambda directory:"
-          ls -la ../
-          ls -la ../../
-          ls -la ../../ingestion_lambda
-          echo "Listing terraform directory:"
-          pwd
-          terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}"
+          terraform -chdir=infra/terraform/data-lake apply -auto-approve -var="region=${{ github.event.inputs.region }}"
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'delete' }}
-        working-directory: infra/terraform/data-lake
         run: terraform destroy -auto-approve -var="region=${{ github.event.inputs.region }}"
