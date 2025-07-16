@@ -61,8 +61,8 @@ jobs:
         uses: hashicorp/setup-terraform@v1
 
       - name: Terraform Init
+        working-directory: infra/terraform/data-lake
         run: |
-          cd infra/terraform/data-lake
           terraform init \
             -backend-config="bucket=dls-terraform-states-${{ github.event.inputs.region }}" \
             -backend-config="key=envs/${{ github.event.inputs.environment }}/dls-test.tfstate" \
@@ -71,10 +71,10 @@ jobs:
 
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'deploy' }}
-        working-directory: .
+        working-directory: infra/terraform/data-lake
         run: terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}"
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'delete' }}
-        working-directory: .
+        working-directory: infra/terraform/data-lake
         run: terraform destroy -auto-approve -var="region=${{ github.event.inputs.region }}"
