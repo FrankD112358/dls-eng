@@ -70,7 +70,8 @@ jobs:
 
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'deploy' }}
-          terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}"
+        run: terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}"
+
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'delete' }}
