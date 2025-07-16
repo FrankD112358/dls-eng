@@ -24,7 +24,7 @@ resource "aws_s3_bucket" "lambda_s3_bucket" {
 # Zip ingestion_lambda folder
 data "archive_file" "lambda_zip" {
   type        = "zip"
-  source_dir  = "${path.module}/ingestion_lambda"
+  source_dir  = "${path.root}/ingestion_lambda"
   output_path = "${path.module}/lambda.zip"
 }
 
@@ -46,7 +46,8 @@ resource "aws_lambda_function" "ingestion_lambda" {
   s3_bucket     = "dls-lambda-functions-${var.region}"
   s3_key        = "lambda.zip"
 
-  source_code_hash = filebase64sha256("${path.module}/../../ingestion_lambda/main.py")
+  # source_code_hash = filebase64sha256("${path.root}/ingestion_lambda/main.py")
+  source_code_hash = filebase64sha256(data.archive_file.lambda_zip.output_path)
 }
 
 resource "aws_iam_role" "lambda_exec" {
