@@ -141,7 +141,7 @@ resource "aws_s3_bucket_notification" "notify_lambda" {
   bucket = aws_s3_bucket.s3_bucket.id
 
   lambda_function {
-    lambda_function_arn = aws_lambda_function.ingestion.arn
+    lambda_function_arn = aws_lambda_function.ingestion_lambda.arn
     events              = ["s3:ObjectCreated:*"]
     filter_suffix       = ".json"
   }
