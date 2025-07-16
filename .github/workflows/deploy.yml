@@ -74,9 +74,9 @@ jobs:
         working-directory: infra/terraform/data-lake
         run: |
           echo "Listing ingestion_lambda directory:"
-          ls -la ..\
-          ls -la ..\..\
-          ls -la ..\..\ingestion_lambda
+          ls -la ../
+          ls -la ../../
+          ls -la ../../ingestion_lambda
           echo "Listing terraform directory:"
           pwd
           terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}"
