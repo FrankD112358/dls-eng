@@ -70,7 +70,9 @@ jobs:
 
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'deploy' }}
-        run: terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}"
+        run: |
+          cd infra/terraform/data-lake
+          terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}"
 
 
       - name: Terraform Destroy
