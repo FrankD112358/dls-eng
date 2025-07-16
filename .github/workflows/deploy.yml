@@ -72,7 +72,14 @@ jobs:
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'deploy' }}
         working-directory: infra/terraform/data-lake
-        run: terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}"
+        run: |
+          echo "Listing ingestion_lambda directory:"
+          ls -la ..\
+          ls -la ..\..\
+          ls -la ..\..\ingestion_lambda
+          echo "Listing terraform directory:"
+          pwd
+          terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}"
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'delete' }}
