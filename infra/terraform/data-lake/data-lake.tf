@@ -1,3 +1,8 @@
+variable "region" {
+  description = "AWS region to deploy into"
+  type        = string
+}
+
 provider "aws" {
   region = var.region
 }
