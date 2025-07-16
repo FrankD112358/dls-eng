@@ -7,6 +7,14 @@ provider "aws" {
   region = var.region
 }
 
+output "path_root_check" {
+  value = path.root
+}
+
+output "path_module_check" {
+  value = path.module
+}
+
 # Log group
 resource "aws_cloudwatch_log_group" "lambda_log_group" {
   name              = "/aws/lambda/dls-test-${var.region}"

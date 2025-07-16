@@ -72,6 +72,7 @@ jobs:
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'deploy' }}
         run: |
+          ls -la ingestion_lambda
           cd infra/terraform/data-lake
           terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}"
 
