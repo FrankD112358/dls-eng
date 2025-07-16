@@ -1,4 +1,4 @@
-name: Deploy CloudFormation
+name: Deploy Template
 
 on:
   workflow_dispatch:
@@ -25,6 +25,15 @@ on:
           - eu-central-1
           - ap-southeast-1
           - ap-northeast-1
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - test
+          - prod
   pull_request: # deploy on PR merges to main
     types:
       - closed
@@ -49,39 +58,21 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Delete failed CloudFormation stack
-        run: |
-          STACK_NAME="dls-test"
-          STATUS=$(aws cloudformation describe-stacks --stack-name $STACK_NAME --region us-east-1 --query "Stacks[0].StackStatus" --output text || echo "NOT_FOUND")
-          if [[ "$STATUS" == "ROLLBACK_COMPLETE" ]]; then
-            echo "Deleting failed stack: $STACK_NAME"
-            aws cloudformation delete-stack --stack-name $STACK_NAME --region us-east-1
-            echo "Waiting for deletion to complete..."
-            aws cloudformation wait stack-delete-complete --stack-name $STACK_NAME --region us-east-1
-          else
-            echo "No failed stack to delete. Status: $STATUS"
-          fi
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
 
-      - name: Deploy CloudFormation stack
-        if: ${{ github.event.inputs.action == 'deploy' }}
-        uses: aws-actions/aws-cloudformation-github-deploy@v1
-        with:
-          name: dls-test
-          template: cloudformation/data-lake.yml
-          no-fail-on-empty-changeset: "1"
-      
-      - name: Zip Lambda function
-        if: ${{ github.event.inputs.action == 'deploy' }}
+      - name: Terraform Init
         run: |
-          cd ingestion_lambda
-          zip -r ../lambda.zip . -x "*.git*" "*.DS_Store"
+          terraform init \
+            -backend-config="bucket=dls-terraform-states-${{ github.event.inputs.region }}" \
+            -backend-config="key=envs/${{ github.event.inputs.environment }}/test.tfstate" \
+            -backend-config="region=${{ github.event.inputs.region }}" \
+            -backend-config="dynamodb_table=terraform-locks"
 
-      - name: Upload Lambda zip to S3
+      - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'deploy' }}
-        run: |
-          aws s3 cp lambda.zip s3://dls-component-name-dls-region/lambda.zip
+          terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}"
 
-      - name: Delete CloudFormation stack
+      - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'delete' }}
-        run: |
-          aws cloudformation delete-stack --stack-name dls-test
+        run: terraform destroy -auto-approve -var="region=${{ github.event.inputs.region }}"
