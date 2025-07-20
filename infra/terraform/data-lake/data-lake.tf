@@ -55,6 +55,10 @@ resource "aws_lambda_function" "ingestion_lambda" {
   s3_key        = "lambda.zip"
 
   source_code_hash = filebase64sha256(data.archive_file.lambda_zip.output_path)
+
+  depends_on = [
+    aws_s3_bucket.s3_bucket
+  ]
 }
 
 resource "aws_iam_role" "lambda_exec" {
@@ -114,14 +118,15 @@ resource "aws_iam_role_policy_attachment" "lambda_policy_attach" {
 }
 
 resource "aws_lambda_permission" "allow_s3" {
-  statement_id  = "AllowS3Invoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.ingestion_lambda.function_name
-  principal     = "s3.amazonaws.com"
+  statement_id   = "AllowS3Invoke"
+  action         = "lambda:InvokeFunction"
+  function_name  = aws_lambda_function.ingestion_lambda.function_name
+  principal      = "s3.amazonaws.com"
   source_account = data.aws_caller_identity.current.account_id
 }
 
-data "aws_caller_identity" "current" {}# S3 landing Zone
+data "aws_caller_identity" "current" {}
+# S3 landing Zone
 resource "aws_s3_bucket" "s3_bucket" {
   bucket = "test-${var.region}"
 }
