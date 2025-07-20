@@ -1,3 +1,7 @@
+terraform {
+  backend "s3" {}
+}
+
 variable "region" {
   description = "AWS region to deploy into"
   type        = string

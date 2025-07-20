@@ -61,6 +61,7 @@ jobs:
         uses: hashicorp/setup-terraform@v1
 
       - name: Terraform Apply
+        id: apply
         if: ${{ github.event.inputs.action == 'deploy' }}
         run: |
           cp -R ingestion_lambda/ infra/terraform/data-lake/ingestion_lambda/
@@ -71,6 +72,10 @@ jobs:
             -backend-config="region=${{ github.event.inputs.region }}" \
             -backend-config="dynamodb_table=terraform-locks"
           terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}"
+
+      - name: Conditional Destroy if Apply Failed
+        if: steps.apply.outcome == 'failure'
+        run: terraform destroy -auto-approve
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'delete' }}
