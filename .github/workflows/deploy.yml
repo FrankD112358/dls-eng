@@ -60,19 +60,24 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
 
-      - name: Terraform Init
+      - name: Terraform Apply
+        if: ${{ github.event.inputs.action == 'deploy' }}
+        working-directory: infra/terraform/data-lake
         run: |
           terraform init \
             -backend-config="bucket=dls-terraform-states-${{ github.event.inputs.region }}" \
-            -backend-config="key=envs/${{ github.event.inputs.environment }}/dls-test.tfstate" \
+            -backend-config="key=envs/${{ github.event.inputs.environment }}/test.tfstate" \
             -backend-config="region=${{ github.event.inputs.region }}" \
             -backend-config="dynamodb_table=terraform-locks"
-
-      - name: Terraform Apply
-        if: ${{ github.event.inputs.action == 'deploy' }}
-        run: |
-          terraform -chdir=infra/terraform/data-lake apply -auto-approve -var="region=${{ github.event.inputs.region }}"
+          terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}"
 
       - name: Terraform Destroy
         if: ${{ github.event.inputs.action == 'delete' }}
-        run: terraform destroy -auto-approve -var="region=${{ github.event.inputs.region }}"
+        working-directory: infra/terraform/data-lake
+        run: |
+          terraform init \
+            -backend-config="bucket=dls-terraform-states-${{ github.event.inputs.region }}" \
+            -backend-config="key=envs/${{ github.event.inputs.environment }}/test.tfstate" \
+            -backend-config="region=${{ github.event.inputs.region }}" \
+            -backend-config="dynamodb_table=terraform-locks"
+          terraform destroy -auto-approve -var="region=${{ github.event.inputs.region }}"
