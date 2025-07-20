@@ -43,7 +43,7 @@ resource "aws_lambda_function" "ingestion_lambda" {
   handler       = "main.handler"
   role          = aws_iam_role.lambda_exec.arn
 
-  s3_bucket     = "dls-lambda-bucket-${var.region}"
+  s3_bucket     = "dls-lambda-functions-${var.region}"
   s3_key        = "lambda.zip"
 
   source_code_hash = filebase64sha256(data.archive_file.lambda_zip.output_path)
@@ -125,7 +125,7 @@ resource "aws_s3_bucket" "s3_bucket" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "cleanup" {
-  bucket = "dls-lambda-bucket-${var.region}"
+  bucket = "dls-lambda-functions-${var.region}"
 
   rule {
     id     = "stagingFolderCleanup"
