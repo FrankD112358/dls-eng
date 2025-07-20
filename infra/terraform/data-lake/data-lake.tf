@@ -125,7 +125,7 @@ resource "aws_s3_bucket" "s3_bucket" {
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "cleanup" {
-  bucket = "dls-lambda-functions-${var.region}"
+  bucket = "dls-lambda-bucket-${var.region}"
 
   rule {
     id     = "stagingFolderCleanup"

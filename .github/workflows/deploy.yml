@@ -73,12 +73,8 @@ jobs:
             -backend-config="dynamodb_table=terraform-locks"
           terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}"
 
-      - name: Conditional Destroy if Apply Failed
-        if: steps.apply.outcome == 'failure'
-        run: terraform destroy -auto-approve
-
       - name: Terraform Destroy
-        if: ${{ github.event.inputs.action == 'delete' }}
+        if: ${{ github.event.inputs.action == 'delete' }} or steps.apply.outcome == 'failure'
         working-directory: infra/terraform/data-lake
         run: |
           terraform init \
