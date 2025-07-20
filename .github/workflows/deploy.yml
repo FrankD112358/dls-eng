@@ -63,6 +63,7 @@ jobs:
       - name: Terraform Apply
         id: apply
         if: ${{ github.event.inputs.action == 'deploy' }}
+        continue-on-error: true
         run: |
           cp -R ingestion_lambda/ infra/terraform/data-lake/ingestion_lambda/
           cd infra/terraform/data-lake
@@ -74,7 +75,7 @@ jobs:
           terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}"
 
       - name: Terraform Destroy
-        if: ${{ github.event.inputs.action == 'delete' }} or steps.apply.outcome == 'failure'
+        if: ${{ github.event.inputs.action == 'delete' || steps.apply.conclusion == 'failure' }}
         working-directory: infra/terraform/data-lake
         run: |
           terraform init \
