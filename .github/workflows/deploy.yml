@@ -62,8 +62,9 @@ jobs:
 
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'deploy' }}
-        working-directory: infra/terraform/data-lake
         run: |
+          cp -R ingestion_lambda/ infra/terraform/data-lake/ingestion_lambda/
+          cd infra/terraform/data-lake
           terraform init \
             -backend-config="bucket=dls-terraform-states-${{ github.event.inputs.region }}" \
             -backend-config="key=envs/${{ github.event.inputs.environment }}/test.tfstate" \
