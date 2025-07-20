@@ -68,7 +68,7 @@ jobs:
           cd infra/terraform/data-lake
           terraform init \
             -backend-config="bucket=dls-terraform-states-${{ github.event.inputs.region }}" \
-            -backend-config="key=envs/${{ github.event.inputs.environment }}/test.tfstate" \
+            -backend-config="key=envs/${{ github.event.inputs.environment }}/dls-data-lake-test.tfstate" \
             -backend-config="region=${{ github.event.inputs.region }}" \
             -backend-config="dynamodb_table=terraform-locks"
           terraform apply -auto-approve -var="region=${{ github.event.inputs.region }}"
@@ -83,7 +83,7 @@ jobs:
         run: |
           terraform init \
             -backend-config="bucket=dls-terraform-states-${{ github.event.inputs.region }}" \
-            -backend-config="key=envs/${{ github.event.inputs.environment }}/test.tfstate" \
+            -backend-config="key=envs/${{ github.event.inputs.environment }}/dls-data-lake-test.tfstate" \
             -backend-config="region=${{ github.event.inputs.region }}" \
             -backend-config="dynamodb_table=terraform-locks"
           terraform destroy -auto-approve -var="region=${{ github.event.inputs.region }}"
