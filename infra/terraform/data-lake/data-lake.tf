@@ -21,22 +21,16 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
   }
 }
 
-# Zip ingestion_lambda folder
-data "archive_file" "lambda_zip" {
-  type        = "zip"
-  source_dir  = "${path.module}/ingestion_lambda"
-  output_path = "${path.module}/lambda.zip"
-}
-
-# Upload ingestion_lambda zip
+# Upload ingestion_lambda zip to S3
 resource "aws_s3_object" "lambda_zip" {
   bucket = "dls-lambda-functions-${var.region}"
   key    = "lambda.zip"
-  source = data.archive_file.lambda_zip.output_path
+  # source = data.archive_file.lambda_zip.output_path
+  source = "${path.module}/package/lambda.zip" 
   etag   = filemd5(data.archive_file.lambda_zip.output_path)
 }
 
-# Lambda Ingestion
+# Create ingestion Lambda
 resource "aws_lambda_function" "ingestion_lambda" {
   function_name = "dls-data-lake-test-${var.region}"
   runtime       = "python3.12"
