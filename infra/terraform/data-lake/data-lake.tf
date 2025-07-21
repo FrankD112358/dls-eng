@@ -24,7 +24,7 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
 # Upload ingestion_lambda zip to S3
 resource "aws_s3_object" "lambda_zip" {
   bucket = "dls-lambda-functions-${var.region}"
-  key    = "lambda.zip"
+  key    = "dls-data-lake-test-lambda.zip"
   source = "${path.module}/ingestion_lambda/dls-data-lake-test-lambda.zip" 
   etag   = filemd5("${path.module}/ingestion_lambda/dls-data-lake-test-lambda.zip")
 }
