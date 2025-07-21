@@ -63,7 +63,6 @@ jobs:
       - name: Terraform Apply
         id: apply
         if: ${{ github.event.inputs.action == 'deploy' }}
-        continue-on-error: true
         run: |
           echo "Copying files to terraform directory"
 
@@ -79,8 +78,6 @@ jobs:
           echo "Zipping lambda function to infra/terraform/data-lake/ingestion_lambda/package/"
 
           zip -r ../lambda.zip .
-
-          cp -R ingestion_lambda/ infra/terraform/data-lake/ingestion_lambda/
           cd infra/terraform/data-lake
 
           echo "Starting Terraform"

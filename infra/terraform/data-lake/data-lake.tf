@@ -25,8 +25,7 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
 resource "aws_s3_object" "lambda_zip" {
   bucket = "dls-lambda-functions-${var.region}"
   key    = "lambda.zip"
-  # source = data.archive_file.lambda_zip.output_path
-  source = "${path.module}/package/lambda.zip" 
+  source = "${path.module}/lambda.zip" 
   etag   = filemd5(data.archive_file.lambda_zip.output_path)
 }
 
