@@ -114,7 +114,8 @@ resource "aws_lambda_permission" "allow_s3" {
   action         = "lambda:InvokeFunction"
   function_name  = aws_lambda_function.ingestion_lambda.function_name
   principal      = "s3.amazonaws.com"
-  source_account = data.aws_caller_identity.current.account_id
+  source_arn    = aws_s3_bucket.s3_bucket.arn
+  # source_account = data.aws_caller_identity.current.account_id
 }
 
 data "aws_caller_identity" "current" {}
@@ -139,6 +140,28 @@ resource "aws_s3_bucket_lifecycle_configuration" "cleanup" {
       days = 7
     }
   }
+}
+
+resource "aws_s3_bucket_policy" "allow_lambda" {
+  bucket = aws_s3_bucket.s3_bucket.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "LambdaAccess"
+        Effect    = "Allow"
+        Principal = {
+          AWS = aws_lambda_function.ingestion_lambda.arn
+        }
+        Action    = [
+          "s3:GetObject",
+          "s3:PutObject"
+        ]
+        Resource  = "${aws_s3_bucket.s3_bucket.arn}/*"
+      }
+    ]
+  })
 }
 
 # S3 Landing Zone Lambda Notification
