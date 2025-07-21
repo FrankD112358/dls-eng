@@ -25,8 +25,8 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
 resource "aws_s3_object" "lambda_zip" {
   bucket = "dls-lambda-functions-${var.region}"
   key    = "lambda.zip"
-  source = "${path.module}/ingestion_lambda/lambda.zip" 
-  etag   = filemd5("${path.module}/ingestion_lambda/lambda.zip")
+  source = "${path.module}/ingestion_lambda/dls-data-lake-test-lambda.zip" 
+  etag   = filemd5("${path.module}/ingestion_lambda/dls-data-lake-test-lambda.zip")
 }
 
 # Create ingestion Lambda
@@ -37,9 +37,9 @@ resource "aws_lambda_function" "ingestion_lambda" {
   role          = aws_iam_role.lambda_exec.arn
 
   s3_bucket     = "dls-lambda-functions-${var.region}"
-  s3_key        = "lambda.zip"
+  s3_key        = "dls-data-lake-test-lambda.zip"
 
-  source_code_hash = filebase64sha256("${path.module}/ingestion_lambda/lambda.zip")
+  source_code_hash = filebase64sha256("${path.module}/ingestion_lambda/dls-data-lake-test-lambda.zip")
 
   depends_on = [
     aws_s3_bucket.s3_bucket

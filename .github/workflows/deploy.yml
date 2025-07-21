@@ -77,7 +77,7 @@ jobs:
 
           echo "Zipping lambda function to infra/terraform/data-lake/ingestion_lambda/package/"
 
-          zip -r ../lambda.zip .
+          zip -r ../dls-data-lake-test-lambda.zip .
           cd ../../
 
           echo "Starting Terraform"
