@@ -26,7 +26,7 @@ resource "aws_s3_object" "lambda_zip" {
   bucket = "dls-lambda-functions-${var.region}"
   key    = "lambda.zip"
   source = "${path.module}/lambda.zip" 
-  etag   = filemd5("lambda.zip")
+  etag   = filemd5("ingestion_lambda/lambda.zip")
 }
 
 # Create ingestion Lambda
@@ -39,7 +39,7 @@ resource "aws_lambda_function" "ingestion_lambda" {
   s3_bucket     = "dls-lambda-functions-${var.region}"
   s3_key        = "lambda.zip"
 
-  source_code_hash = filebase64sha256("lambda.zip")
+  source_code_hash = filebase64sha256("ingestion_lambda/lambda.zip")
 
   depends_on = [
     aws_s3_bucket.s3_bucket
