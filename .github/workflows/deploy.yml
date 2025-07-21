@@ -73,7 +73,7 @@ jobs:
 
           cd lambda_build
           zip -r dls-data-lake-test-lambda.zip .
-          mv dls-data-lake-test-lambda.zip ../infra/terraform/data-lake/ingestion_lambda/
+          mv dls-data-lake-test-lambda.zip ../infra/terraform/data-lake/
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
