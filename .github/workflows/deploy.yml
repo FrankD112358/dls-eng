@@ -57,31 +57,27 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
+      - name: Build Lambda Package
+        if: ${{ github.event.inputs.action == 'deploy' }}
+        run: |
+          echo "Packaging lambda"
+          mkdir -p lambda_build
+          cp ingestion_lambda/main.py lambda_build/
+          cp ingestion_lambda/requirements.txt lambda_build/
+          docker run --rm -v "$PWD/lambda_build":/var/task public.ecr.aws/lambda/python:3.12 \
+            bash -c "pip install -r /var/task/requirements.txt -t /var/task"
+          cd lambda_build
+          zip -r dls-data-lake-test-lambda.zip .
+          mv dls-data-lake-test-lambda.zip ../infra/terraform/data-lake/ingestion_lambda
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
-
+        
       - name: Terraform Apply
         id: apply
         if: ${{ github.event.inputs.action == 'deploy' }}
+        working-directory: infra/terraform/data-lake
         run: |
-          echo "Copying files to terraform directory"
-
-          cp -R ingestion_lambda/ infra/terraform/data-lake/ingestion_lambda/
-          cd infra/terraform/data-lake/ingestion_lambda/
-
-          echo "Installing requirements"
-
-          pip install -r requirements.txt -t ./package
-          cp main.py ./package/
-          cd package
-
-          echo "Zipping lambda function to infra/terraform/data-lake/ingestion_lambda/package/"
-
-          zip -r ../dls-data-lake-test-lambda.zip .
-          cd ../../
-
-          echo "Starting Terraform"
-
           terraform init \
             -backend-config="bucket=dls-terraform-states-${{ github.event.inputs.region }}" \
             -backend-config="key=envs/${{ github.event.inputs.environment }}/dls-data-lake-test.tfstate" \
