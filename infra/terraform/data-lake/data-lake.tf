@@ -42,7 +42,8 @@ resource "aws_lambda_function" "ingestion_lambda" {
   source_code_hash = filebase64sha256("${path.module}/ingestion_lambda/dls-data-lake-test-lambda.zip")
 
   depends_on = [
-    aws_s3_bucket.s3_bucket
+    aws_s3_bucket.s3_bucket,
+    aws_s3_object.lambda_zip
   ]
 }
 
