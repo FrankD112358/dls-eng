@@ -25,8 +25,8 @@ resource "aws_cloudwatch_log_group" "lambda_log_group" {
 resource "aws_s3_object" "lambda_zip" {
   bucket = "dls-lambda-functions-${var.region}"
   key    = "lambda.zip"
-  source = "${path.module}/lambda.zip" 
-  etag   = filemd5("ingestion_lambda/lambda.zip")
+  source = "${path.module}/ingestion_lambda/lambda.zip" 
+  etag   = filemd5("${path.module}/ingestion_lambda/lambda.zip")
 }
 
 # Create ingestion Lambda
@@ -39,7 +39,7 @@ resource "aws_lambda_function" "ingestion_lambda" {
   s3_bucket     = "dls-lambda-functions-${var.region}"
   s3_key        = "lambda.zip"
 
-  source_code_hash = filebase64sha256("ingestion_lambda/lambda.zip")
+  source_code_hash = filebase64sha256("${path.module}/ingestion_lambda/lambda.zip")
 
   depends_on = [
     aws_s3_bucket.s3_bucket
@@ -145,7 +145,7 @@ resource "aws_s3_bucket_policy" "allow_lambda" {
         Sid       = "LambdaAccess"
         Effect    = "Allow"
         Principal = {
-          AWS = aws_lambda_function.ingestion_lambda.arn
+          AWS = aws_iam_role.lambda_exec.arn
         }
         Action    = [
           "s3:GetObject",
