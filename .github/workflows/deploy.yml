@@ -64,7 +64,7 @@ jobs:
           mkdir -p lambda_build
           cp ingestion_lambda/main.py lambda_build/
           cp ingestion_lambda/requirements.txt lambda_build/
-          
+
           docker run --rm \
             --entrypoint bash \
             -v "$PWD/lambda_build":/var/task \
@@ -73,7 +73,7 @@ jobs:
 
           cd lambda_build
           zip -r dls-data-lake-test-lambda.zip .
-          mv dls-data-lake-test-lambda.zip ../infra/terraform/data-lake/ingestion_lambda
+          mv dls-data-lake-test-lambda.zip ../infra/terraform/data-lake/ingestion_lambda/
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
